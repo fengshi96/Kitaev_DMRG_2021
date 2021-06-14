@@ -1,0 +1,13 @@
+string="-m64 -std=c++17 -w -fPIC -I. -I/home/shifeng/Codes/0.Codes/ITensor \
+-I/home/shifeng/Codes/0.Codes/intel/oneapi/mkl/latest/include  \
+-O3 -DNDEBUG -Wall main.cpp -o dmrg \
+-L/home/shifeng/Codes/0.Codes/ITensor/lib -litensor \
+-L/home/shifeng/Codes/0.Codes/intel/oneapi/mkl/latest/lib/intel64 \
+-L/home/shifeng/Codes/0.Codes/intel/oneapi/compiler/2021.2.0/linux/compiler/lib/intel64_lin \
+-lmkl_intel_lp64 -lmkl_intel_thread -lmkl_rt -lmkl_core -liomp5 -lpthread"
+
+#echo "g++ $string"
+
+g++ $string
+
+

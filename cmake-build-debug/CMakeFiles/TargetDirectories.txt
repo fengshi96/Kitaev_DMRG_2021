@@ -1,0 +1,3 @@
+/Barn/Lab/ITensor_2D/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/Barn/Lab/ITensor_2D/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Barn/Lab/ITensor_2D/cmake-build-debug/CMakeFiles/ITensor_2D.dir
