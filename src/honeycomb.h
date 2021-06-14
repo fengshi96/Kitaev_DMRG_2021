@@ -9,7 +9,7 @@
 #include "matrix.h"
 
 alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = true,
-                           const std::vector<size_t> sysIndx = {}) {
+                           const std::vector<size_t> sysIndx = {1,2,3,6,7,8}) {
 
     int Number1Neigh_ = 3;
     int Nsite_ = Nx * Ny * 2;
