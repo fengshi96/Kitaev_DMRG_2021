@@ -6,10 +6,22 @@
 #define ITENSOR_2D_HONEYCOMB_H
 
 #include <iostream>
+#include <string>
 #include "matrix.h"
 
 alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = true,
-                           const std::vector<size_t> sysIndx = {1,2,3,6,7,8}) {
+                           const std::string& cutting = "") {
+
+    // cutting index array
+    size_t cuttingStringLen = cutting.length();
+    std::vector<size_t> sysIndx;
+    sysIndx.reserve(cuttingStringLen);
+    for (char const &c: cutting) {
+        sysIndx.emplace_back(static_cast<size_t>(c - '0'));
+    }
+
+    for (auto const &e : sysIndx) {std::cout << "SysIndx:" <<  e << std::endl;}
+
 
     int Number1Neigh_ = 3;
     int Nsite_ = Nx * Ny * 2;
@@ -131,7 +143,7 @@ alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = t
 
 
         // Apply PBC
-        if(yPBC==true) {
+        if(yPBC) {
             jx = int(ix - LLY);
             jy = 0;
             if(jx>=0 && iy==ymax && Nc_(jx,jy)!=-1) {
@@ -141,7 +153,7 @@ alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = t
             }
         }
 
-        if(xPBC==true) {
+        if(xPBC) {
             jx = int(ix + LLX*2 - 1);
             jy = int(iy + 1);
             if (jx<=xmax && iy<=ymax && iy % 2 == 0 && Nc_(jx,jy)!=-1) {
@@ -174,11 +186,12 @@ namespace itensor {
 
         auto xperiodic = args.getBool("XPeriodic", true);
         auto yperiodic = args.getBool("YPeriodic", true);
+        auto cutting = args.getString("Cutting", "");
         // Periodicity on x/y is meaningless for one dimensional chain
         xperiodic = xperiodic && (Ny > 1);
         yperiodic = yperiodic && (Ny > 1);
 
-        alg::Matrix<int> N1neigh = Honeycomb(Nx, Ny, xperiodic, yperiodic);
+        alg::Matrix<int> N1neigh = Honeycomb(Nx, Ny, xperiodic, yperiodic, cutting);
 
         LatticeGraph latt;
         latt.reserve(int(N * 1.5) + 1);

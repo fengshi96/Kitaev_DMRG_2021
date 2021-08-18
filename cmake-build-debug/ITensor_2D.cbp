@@ -98,6 +98,9 @@
 		<Unit filename="/Barn/Lab/ITensor_2D/src/matrix.h">
 			<Option target="ITensor_2D"/>
 		</Unit>
+		<Unit filename="/Barn/Lab/ITensor_2D/src/myArgs.h">
+			<Option target="ITensor_2D"/>
+		</Unit>
 		<Unit filename="/Barn/Lab/ITensor_2D/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>

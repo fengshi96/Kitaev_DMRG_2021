@@ -18,6 +18,9 @@ int main() {
     int N = Nx*Ny*2;
     bool yperiodic = true;
     bool xperiodic = true;
+    std::string cutting = "123678";
+    int cutLabel = cutting.length();
+    std::cout << "cutLabel=" << cutLabel << std::endl;
 
     double field = 0.0;
 
@@ -32,7 +35,9 @@ int main() {
     //
 
     // std::vector<int> sysIndx = {1,2,3,6,7,8};
-    auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic,"XPeriodic=",xperiodic});
+    auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic,
+                                                "XPeriodic=",xperiodic,
+                                                "Cutting=",cutting});
     std::cout << lattice;
 
     auto ampo = AutoMPO(sites);
@@ -97,6 +102,29 @@ int main() {
     //
     printfln("\nGround State Energy = %.10f",energy);
     printfln("\nUsing overlap = %.10f", innerC(psi,H,psi) );
+
+
+
+    // Begin entanglment
+    int bond = cutLabel;  // index of which bond to cut
+    psi.position(bond);
+
+    //SVD this wavefunction to get the spectrum of density-matrix eigenvalues
+    auto l = leftLinkIndex(psi,bond);
+    auto s = siteIndex(psi,bond);
+    auto [U,S,V] = svd(psi(bond),{l,s});
+    auto u = commonIndex(U,S);
+
+    //Apply von Neumann formula
+//to the squares of the singular values
+    Real SvN = 0.;
+    for(auto n : range1(dim(u)))
+    {
+        auto Sn = elt(S,n,n);
+        auto p = sqr(Sn);
+        if(p > 1E-12) SvN += -p*log(p);
+    }
+    printfln("Across bond b=%d, SvN = %.10f",bond,SvN);
 
 
     return 0;

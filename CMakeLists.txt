@@ -19,7 +19,7 @@ link_directories(
 
 set(MKL -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_rt -lmkl_core -liomp5 -lpthread)
 set(ITENSOR -litensor)
-set(SOURCE_FILES main.cpp src/honeycomb.h src/matrix.h src/entanglement.h)
+set(SOURCE_FILES main.cpp src/honeycomb.h src/matrix.h src/entanglement.h src/myArgs.h)
 
 # executable and linking
 add_executable(ITensor_2D ${SOURCE_FILES})

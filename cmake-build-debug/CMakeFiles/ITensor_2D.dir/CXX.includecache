@@ -21,6 +21,8 @@ src/entanglement.h
 /Barn/Lab/ITensor_2D/src/honeycomb.h
 iostream
 -
+string
+-
 matrix.h
 /Barn/Lab/ITensor_2D/src/matrix.h
 
