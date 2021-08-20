@@ -18,15 +18,17 @@ int main() {
     int N = Nx*Ny*2;
     bool yperiodic = true;
     bool xperiodic = true;
-    std::string cutting = "123678";
-    int cutLabel = cutting.length();
+    std::string cutting = "1,2,3,6,7,8";
+
+    int cutLabel = 1;
+    for (char const &c : cutting) if(c == ',') cutLabel++;
     std::cout << "cutLabel=" << cutLabel << std::endl;
 
     double field = 0.0;
 
-    //
-    // Initialize the site degrees of freedom.
-    //
+
+    //  Initialize the site degrees of freedom.
+
     auto sites = SpinHalf(N,{"ConserveQNs=",false});
 
     //

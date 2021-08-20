@@ -9,19 +9,31 @@
 #include <string>
 #include "matrix.h"
 
+
+std::vector<size_t> labelParser(const std::string& cutting = "", const std::string& delimiter = ",") {
+    size_t pos = 0;
+    std::string token;
+
+    std::vector<size_t> sysIndx;
+    sysIndx.reserve(12);
+
+    std::string str2Cut = cutting;
+    while ((pos = str2Cut.find(delimiter)) != std::string::npos) {
+        token = str2Cut.substr(0, pos);
+        sysIndx.emplace_back(std::stoi(token, nullptr, 10));
+        str2Cut.erase(0, pos + delimiter.length());
+    }
+    sysIndx.emplace_back(std::stoi(str2Cut, nullptr, 10));
+    for (auto const &l : sysIndx) {std::cout << "sysIndx:" << l << std::endl;}
+
+    return sysIndx;
+}
+
+
 alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = true,
                            const std::string& cutting = "") {
 
-    // cutting index array
-    size_t cuttingStringLen = cutting.length();
-    std::vector<size_t> sysIndx;
-    sysIndx.reserve(cuttingStringLen);
-    for (char const &c: cutting) {
-        sysIndx.emplace_back(static_cast<size_t>(c - '0'));
-    }
-
-    for (auto const &e : sysIndx) {std::cout << "SysIndx:" <<  e << std::endl;}
-
+    std::vector<size_t> sysIndx = labelParser(cutting);
 
     int Number1Neigh_ = 3;
     int Nsite_ = Nx * Ny * 2;
