@@ -13,4 +13,4 @@
 -- Detecting CXX compile features - done
 -- Configuring done
 -- Generating done
--- Build files have been written to: /Barn/Lab/ITensor_2D/cmake-build-debug
+-- Build files have been written to: /Barn/Lab/ITensor_2D

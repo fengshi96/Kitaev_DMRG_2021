@@ -11,14 +11,17 @@ using namespace itensor;
  * https://github.com/ITensor/ITensor/blob/v3/itensor/mps/lattice/latticebond.h
  * */
 
-int main() {
+int main(int argc, char* argv[]) {
+
+    double Kz = std::stod(argv[1]);
+    std::cout << "Kz = " << Kz << std::endl;
 
     int Nx = 3;
     int Ny = 3;
     int N = Nx*Ny*2;
     bool yperiodic = true;
     bool xperiodic = true;
-    std::string cutting = "1,2,3,6,7,8";
+    std::string cutting = "0,1,2,3";
 
     int cutLabel = 1;
     for (char const &c : cutting) if(c == ',') cutLabel++;
@@ -44,10 +47,17 @@ int main() {
 
     auto ampo = AutoMPO(sites);
     // Isotropic Kitaev interaction
-    for(auto bnd : lattice)
-        ampo +=  bnd.type, bnd.s1, bnd.type, bnd.s2;
+    for(auto bnd : lattice) {
+        if (bnd.type == "Sz")
+            ampo +=  Kz, bnd.type, bnd.s1, bnd.type, bnd.s2;
+        else
+            ampo += bnd.type, bnd.s1, bnd.type, bnd.s2;
+    }
 
-    // Add magnetic field
+
+    // sx, 1, sx, 2
+
+    // Add isotropic magnetic field
     for (int i = 1; i <=N; ++i) {
         ampo += field, "Sx", i;
         ampo += field, "Sy", i;
@@ -118,7 +128,7 @@ int main() {
     auto u = commonIndex(U,S);
 
     //Apply von Neumann formula
-//to the squares of the singular values
+    //to the squares of the singular values
     Real SvN = 0.;
     for(auto n : range1(dim(u)))
     {
