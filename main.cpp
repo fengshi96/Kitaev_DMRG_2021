@@ -14,7 +14,9 @@ using namespace itensor;
 int main(int argc, char* argv[]) {
 
     double Kz = std::stod(argv[1]);
+    double field = std::stod(argv[2]);
     std::cout << "Kz = " << Kz << std::endl;
+    std::cout << "Field = " << field << std::endl;
 
     int Nx = 3;
     int Ny = 3;
@@ -26,8 +28,6 @@ int main(int argc, char* argv[]) {
     int cutLabel = 1;
     for (char const &c : cutting) if(c == ',') cutLabel++;
     std::cout << "cutLabel=" << cutLabel << std::endl;
-
-    double field = 0.0;
 
 
     //  Initialize the site degrees of freedom.
