@@ -39,7 +39,6 @@ int main(int argc, char* argv[]) {
     // next-neighbor Heisenberg model.
     //
 
-    // std::vector<int> sysIndx = {1,2,3,6,7,8};
     auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic,
                                                 "XPeriodic=",xperiodic,
                                                 "Cutting=",cutting});
