@@ -113,6 +113,8 @@ int main(int argc, char* argv[]) {
     //
     printfln("\nGround State Energy = %.10f",energy);
     printfln("\nUsing overlap = %.10f", innerC(psi,H,psi) );
+    writeToFile(std::string("sites.dat"),sites);
+    writeToFile(std::string("psi.dat"),psi);
 
 
 
