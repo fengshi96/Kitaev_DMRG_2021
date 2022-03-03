@@ -2,6 +2,7 @@
 #include "itensor/all.h"
 #include "src/honeycomb.h"
 #include "src/entanglement.h"
+#include <Eigen/Dense>
 
 using namespace itensor;
 
@@ -12,66 +13,68 @@ using namespace itensor;
  * */
 
 int main(int argc, char* argv[]) {
-
-    double Kz = std::stod(argv[1]);
-    double field = std::stod(argv[2]);
-    std::cout << "Kz = " << Kz << std::endl;
-    std::cout << "Field = " << field << std::endl;
-
-    int Nx = 3;
-    int Ny = 3;
+    if(argc < 2)  {
+        printfln("Usage: %s input_file",argv[0]);
+        return 0;
+    }
+    auto input = InputGroup(argv[1],"input");
+    int Nx = input.getInt("Nx");
+    int Ny = input.getInt("Ny");
     int N = Nx*Ny*2;
-    bool yperiodic = true;
-    bool xperiodic = true;
-    std::string cutting = "0,1,2,3";
+    bool xperiodic = input.getInt("IsPeriodicX");
+    bool yperiodic = input.getInt("IsPeriodicY");
 
-    int cutLabel = 1;
-    for (char const &c : cutting) if(c == ',') cutLabel++;
-    std::cout << "cutLabel=" << cutLabel << std::endl;
+    double Kx = input.getInt("Kx");
+    double Ky = input.getInt("Ky");
+    double Kz = input.getInt("Kz");
+
+    double Hx = input.getInt("Hx");
+    double Hy = input.getInt("Hy");
+    double Hz = input.getInt("Hz");
+
+    // sweep parameters
+    auto totalSweeps = input.getInt("totalSweeps");
+    auto sw_table = InputGroup(input,"sweep_table");
+    auto sweeps = Sweeps(totalSweeps,sw_table);
+    println(sweeps);
+
+//    std::string cutting = "0,1,2,3";
+//    int cutLabel = 1;
+//    for (char const &c : cutting) if(c == ',') cutLabel++;
+//    std::cout << "cutLabel=" << cutLabel << std::endl;
 
 
     //  Initialize the site degrees of freedom.
 
     auto sites = SpinHalf(N,{"ConserveQNs=",false});
 
-    //
-    // Use the AutoMPO feature to create the
-    // next-neighbor Heisenberg model.
-    //
-
-    auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic,
-                                                "XPeriodic=",xperiodic,
-                                                "Cutting=",cutting});
+    // auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic, "XPeriodic=",xperiodic, "Cutting=",cutting});
+    auto lattice = honeycombLattice(Nx,Ny,{"YPeriodic=",yperiodic, "XPeriodic=",xperiodic});
     std::cout << lattice;
 
     auto ampo = AutoMPO(sites);
-    // Isotropic Kitaev interaction
+    // Kitaev interaction
     for(auto bnd : lattice) {
-        if (bnd.type == "Sz")
+        if (bnd.type == "Sx")
             ampo +=  Kz, bnd.type, bnd.s1, bnd.type, bnd.s2;
-        else
-            ampo += bnd.type, bnd.s1, bnd.type, bnd.s2;
+        else if (bnd.type == "Sy")
+            ampo += Ky, bnd.type, bnd.s1, bnd.type, bnd.s2;
+        else if (bnd.type == "Sz")
+            ampo += Kz, bnd.type, bnd.s1, bnd.type, bnd.s2;
     }
 
 
-    // sx, 1, sx, 2
-
-    // Add isotropic magnetic field
+    // Add magnetic field
     for (int i = 1; i <=N; ++i) {
-        ampo += field, "Sx", i;
-        ampo += field, "Sy", i;
-        ampo += field, "Sz", i;
+        ampo += Hx, "Sx", i;
+        ampo += Hy, "Sy", i;
+        ampo += Hz, "Sz", i;
     }
 
     auto H = toMPO(ampo);
 
     // Set the initial wavefunction matrix product state
     // to be a Neel state.
-    //
-    // This choice implicitly sets the global Sz quantum number
-    // of the wavefunction to zero. Since it is an MPS
-    // it will remain in this quantum number sector.
-    //
     auto state = InitState(sites);
     for(int i = 1; i <= N; ++i)
     {
@@ -83,29 +86,11 @@ int main(int argc, char* argv[]) {
 
     auto psi0 = MPS(state);
 
-    //
     // overlap calculates matrix elements of MPO's with respect to MPS's
     // inner(psi0,H,psi0) = <psi0|H|psi0>
-    //
     printfln("Initial energy = %.5f", innerC(psi0,H,psi0) );
 
-    //
-    // Set the parameters controlling the accuracy of the DMRG
-    // calculation for each DMRG sweep.
-    // Here less than 5 cutoff values are provided, for example,
-    // so all remaining sweeps will use the last one given (= 1E-10).
-    //
-    auto sweeps = Sweeps(12);
-    sweeps.mindim() = 100,100,100,100,100,100,100,100,100,100,100,100;
-    sweeps.maxdim() = 100,200,200,300,500,500,500,500,500,500,700,800;
-    sweeps.cutoff() = 1E-8;
-    sweeps.niter() = 2;
-    sweeps.noise() = 1E-5,1E-6,1E-7,1E-8;
-    println(sweeps);
-
-    //
     // Begin the DMRG calculation
-    //
     auto [energy,psi] = dmrg(H,psi0,sweeps,"Quiet");
 
     //
@@ -118,26 +103,26 @@ int main(int argc, char* argv[]) {
 
 
 
-    // Begin entanglment
-    int bond = cutLabel;  // index of which bond to cut
-    psi.position(bond);
-
-    //SVD this wavefunction to get the spectrum of density-matrix eigenvalues
-    auto l = leftLinkIndex(psi,bond);
-    auto s = siteIndex(psi,bond);
-    auto [U,S,V] = svd(psi(bond),{l,s});
-    auto u = commonIndex(U,S);
-
-    //Apply von Neumann formula
-    //to the squares of the singular values
-    Real SvN = 0.;
-    for(auto n : range1(dim(u)))
-    {
-        auto Sn = elt(S,n,n);
-        auto p = sqr(Sn);
-        if(p > 1E-12) SvN += -p*log(p);
-    }
-    printfln("Across bond b=%d, SvN = %.10f",bond,SvN);
+//    // Begin entanglment
+//    int bond = cutLabel;  // index of which bond to cut
+//    psi.position(bond);
+//
+//    //SVD this wavefunction to get the spectrum of density-matrix eigenvalues
+//    auto l = leftLinkIndex(psi,bond);
+//    auto s = siteIndex(psi,bond);
+//    auto [U,S,V] = svd(psi(bond),{l,s});
+//    auto u = commonIndex(U,S);
+//
+//    //Apply von Neumann formula
+//    //to the squares of the singular values
+//    Real SvN = 0.;
+//    for(auto n : range1(dim(u)))
+//    {
+//        auto Sn = elt(S,n,n);
+//        auto p = sqr(Sn);
+//        if(p > 1E-12) SvN += -p*log(p);
+//    }
+//    printfln("Across bond b=%d, SvN = %.10f",bond,SvN);
 
 
     return 0;

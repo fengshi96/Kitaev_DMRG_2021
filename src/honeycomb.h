@@ -32,8 +32,10 @@ std::vector<size_t> labelParser(const std::string& cutting = "", const std::stri
 
 alg::Matrix<int> Honeycomb(size_t Nx, size_t Ny, bool xPBC = true, bool yPBC = true,
                            const std::string& cutting = "") {
-
-    std::vector<size_t> sysIndx = labelParser(cutting);
+    std::vector<size_t> sysIndx;
+    if (cutting != ""){
+        sysIndx = labelParser(cutting);
+    }
 
     int Number1Neigh_ = 3;
     int Nsite_ = Nx * Ny * 2;

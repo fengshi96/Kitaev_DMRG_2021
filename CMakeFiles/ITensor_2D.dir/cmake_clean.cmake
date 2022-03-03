@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/ITensor_2D.dir/main.cpp.o"
+  "CMakeFiles/ITensor_2D.dir/src/observe/spinCorr.cpp.o"
   "ITensor_2D"
   "ITensor_2D.pdb"
 )
